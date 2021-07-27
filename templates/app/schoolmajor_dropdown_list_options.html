@@ -1,0 +1,4 @@
+<option value="">---------</option>
+{% for schoolmajor in schoolmajors %}
+<option value="{{ schoolmajor.pk }}">{{ schoolmajor.name }}</option>
+{% endfor %}

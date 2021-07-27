@@ -1,0 +1,54 @@
+<html>
+<body>
+<title>{{ user }}'s Path</title>
+  <p>Request was: {{ method }}<p>
+  <p>Current User: {{ user }}<p>
+  <h1>College I'm Attending</h1>
+
+  {% for school in schools %}
+    <p>{{ school.name }}<p>
+  {% endfor %}
+
+  <h2>Add a Path</h2>
+  <form method="post" id="UserPathForm" data-schoolmajors-url="{% url 'ajax_load_schoolmajors' %}">
+    {% csrf_token %}
+    {{ user_path_form.as_p }}
+    <input type="submit" name = "addpath_submission" value="Submit">
+  </form>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script>
+      $("#id_school").change(function () {
+          const url = $("#UserPathForm").attr("data-schoolmajors-url");  // get the url of the `load_cities` view
+          const schoolId = $(this).val();  // get the selected country ID from the HTML input
+
+          $.ajax({                       // initialize an AJAX request
+              url: url,                    // set the url of the request (= /persons/ajax/load-cities/ )
+              data: {
+                  'school_id': schoolId       // add the country id to the GET parameters
+              },
+              success: function (data) {   // `data` is the return of the `load_cities` view function
+                  $("#id_school_major").html(data);  // replace the contents of the city input with the data that came from the server
+                  /*
+
+                  let html_data = '<option value="">---------</option>';
+                  data.forEach(function (city) {
+                      html_data += `<option value="${city.id}">${city.name}</option>`
+                  });
+                  console.log(html_data);
+                  $("#id_city").html(html_data);
+
+                  */
+              }
+          });
+
+      });
+  </script>
+
+  <h2>Choose the goal you would like to see detailed requirements for</h2>
+
+  <form method="POST" class="post-form">{% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" name = "major_submission" class="save btn btn-default">Select</button>
+      </form>
+</body>
+</html>

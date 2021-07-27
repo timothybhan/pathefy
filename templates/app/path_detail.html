@@ -1,0 +1,133 @@
+{% load extras %}
+<html>
+<body>
+<title>{{ user }}'s Path</title>
+  <p>Request was: {{ method }}<p>
+  <p>Current User: {{ user }}<p>
+  <h1>Colleges I'm Attending</h1>
+  {% for school in schools %}
+    <p>{{ school.name }}<p>
+  {% endfor %}
+
+  <h2>Choose the goal you would like to see detailed requirements for</h2>
+
+  <form method="POST" class="post-form">{% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" name="select_goal" class="save btn btn-default">Select</button>
+      </form>
+</body>
+
+<h2>Chosen Goal</h2>
+  <p>{{ chosen_major.degree_type }} in {{ chosen_major.name }} at {{ chosen_major.school }}<p>
+<br><h2>Progress Tracking</h2>
+  <p>Number of Major Requirements: {{num_of_major_requirements}}<p>
+  <p>Number of Major Requirements with a course articulation: {{num_of_major_requirements_with_articulation}}<p>
+  <p>Number of Major Requirements that you completed: {{num_of_major_requirements_completed}}<p>
+<h1>Major Requirements</h1>
+<table style="width:100%">
+<tr>
+  <th>Number</th>
+  <th>Requirement at {{ chosen_major.school }}</th>
+  <th>Articulated Courses at {{schools.get}}</th>
+  <th>Your Completion</th>
+  <th>Completed or Planned Term</th>
+</tr>
+{% for requirement in major_requirements %}
+<tr>
+  <td>{{ requirement.req_number }}</td>
+  <td>{{ requirement.description }}</td>
+
+  {% if requirement.fullfillment_options == 1 %}
+    <td>{{ requirement.course.0 }}</td>
+    <td>{{ requirement.completion.0 }}</td>
+    <td>
+      <ol>
+        {% for ucourseterm in requirement.user_course_term.0 %}
+          {% if requirement.user_course_status.0|return_item:forloop.counter0 == 'CO' %}
+            {{ucourseterm}}
+          {% else %}
+            <li>
+              <form name=TermOptionSelection method="post">{% csrf_token %}
+                <select name = "termoption" id="the-id">
+                  {% if ucourseterm != None %}
+                    <option selected = "selected" value="">{{ ucourseterm }} </option>
+                  {% else %}
+                    <option selected = "selected" value="">Select Option</option>
+                  {% endif %}
+                  {% define_int requirement.course_id.0|return_item:forloop.counter0 as course_id %}
+                  {% for year in term_year_choices %}
+                    {% for semester in term_semester_choices %}
+                      <option value="{{ semester }} {{ year }} {{course_id}}">{{ semester }} {{ year }}</option>
+                    {% endfor %}
+                  {% endfor %}
+                </select>
+                <input type="submit" name="select_term_option" value="Select">
+              </form>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </td>
+  {% elif requirement.fullfillment_options == 0 %}
+    <td>No Course Articulated</td>
+    <td></td>
+    <td></td>
+  {% else %}
+    {% define_int requirement.preferred_fulfillment_option as option_index %}
+    <td>
+      <form name=FulfillmentOptionSelection method="post">{% csrf_token %}
+        <select name = "fulfillmentoption" id="the-id">
+          {% if option_index != None %}
+            <option selected = "selected" value="">{{ requirement.course|return_item:option_index }} </option>
+          {% else %}
+            <option selected = "selected" value="">Select Option</option>
+          {% endif %}
+          {% for course in requirement.course %}
+            {% if option_index == forloop.counter0 %}
+            {% else %}
+              <option value="{{ requirement.req_number }}.{{forloop.counter0}}">{{ course }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="submit" name="select_option" value="Select">
+      </form>
+    </td>
+    <td>{{ requirement.completion|return_item:option_index }}</td>
+    <td>
+      <ol>
+        {% for ucourseterm in requirement.user_course_term|return_item:option_index %}
+          {% define_int forloop.counter0 as course_index %}
+          {% if requirement.user_course_status|return_item:option_index|return_item:forloop.counter0 == 'CO' %}
+            {{ucourseterm}}
+          {% else %}
+            <li>
+              <form name=TermOptionSelection method="post">{% csrf_token %}
+                <select name = "termoption" id="the-id">
+                  {% if ucourseterm != None %}
+                    <option selected = "selected" value="">{{ ucourseterm }} </option>
+                  {% else %}
+                    <option selected = "selected" value="">Select Option</option>
+                  {% endif %}
+                  {% define_int requirement.course_id|return_item:option_index|return_item:course_index as course_id %}
+                  {% for year in term_year_choices %}
+                    {% for semester in term_semester_choices %}
+                      <option value="{{ semester }} {{ year }} {{course_id}}">{{ semester }} {{ year }}</option>
+                    {% endfor %}
+                  {% endfor %}
+                </select>
+                <input type="submit" name="select_term_option" value="Select">
+              </form>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ol>
+    </td>
+  {% endif %}
+</tr>
+{% endfor %}
+</table>
+<br><h2>Add Courses to Fulfill Outstanding Requirements</h2>
+<h1>GE Requirements</h1>
+<br><h2>Add Courses to Fulfill Outstanding Requirements</h2>
+
+</html>

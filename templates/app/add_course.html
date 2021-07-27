@@ -1,0 +1,43 @@
+{% load extras %}
+<html>
+{{ course_id }}
+<h2>{{ course_schedule.school_course.0}}</h2>
+<h2>{{ display_msg }}</h2>
+<table style="width:100%">
+<tr>
+  <th>Term</th>
+  <th>Class Type</th>
+  <th>Course Reference Number</th>
+  <th>Component Name</th>
+  <th>Instructor</th>
+  <th>Location</th>
+  <th>Prerequisites</th>
+  <th>Class Size</th>
+  <th>Waitlist Size</th>
+  <th>Enrolled Count</th>
+  <th>Waitlist Count</th>
+</tr>
+{% for cs in course_schedule %}
+<tr>
+  <td>{{ cs.term }}</td>
+  <td>{{ cs.class_type }}</td>
+  <td>{{ cs.course_reference_number }}</td>
+  <td>{{ cs.component_name }}</td>
+  <td>{{ cs.instructor }}</td>
+  <td>{{ cs.location }}</td>
+  <td>{{ cs.prerequisites }}</td>
+  <td>{{ cs.class_size }}</td>
+  <td>{{ cs.waitlist_size }}</td>
+  <td>{{ cs.enrolled_count }}</td>
+  <td>{{ cs.waitlisted_count }}</td>
+  <td>
+    <form action="../add_course/{{ course_id }}" method="post">{% csrf_token %}
+        <input type="hidden" name="course" value="{{ cs.id }}" />
+        <input type="submit" value="Add Course to Schedule" name=""/>
+    </form>
+  <td>
+</tr>
+{% endfor %}
+</table>
+
+</html>
